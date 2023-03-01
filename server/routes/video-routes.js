@@ -11,9 +11,10 @@ router.get("/", (req, res) => {
 
 // POST method to write to the DB a Video instance
 router.post("/", async (req, res) => {
-  const { title } = req.body;
+  const title = req.body;
+  console.log(title);
   try {
-    const video = await Video.create({ title });
+    const video = await Video.create(title);
     res.status(200).json(video);
   } catch (err) {
     res.status(400).json({ error: err.message });

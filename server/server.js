@@ -8,9 +8,9 @@ const portNumber = process.env.PORT;
 const app = express();
 
 // Middleware
-app.use("/api/video", videoRoutes);
-
 app.use(express.json());
+
+app.use("/api/video", videoRoutes);
 
 // Console logs the path and method
 app.use((req, res, next) => {
