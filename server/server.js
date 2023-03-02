@@ -1,4 +1,5 @@
 require("dotenv").config();
+const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const videoRoutes = require("./routes/video-routes");
@@ -8,8 +9,12 @@ const portNumber = process.env.PORT;
 const app = express();
 
 // Middleware
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+  })
+);
 app.use(express.json());
-
 app.use("/api/video", videoRoutes);
 
 // Console logs the path and method
