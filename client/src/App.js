@@ -3,6 +3,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 
 // My Pages and Components
 import Videos from "./pages/Videos";
+import VideoCapture from "./components/video-capture";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <div className="pages">
             <Routes>
               <Route path="/" element={<Videos />}></Route>
+              <Route path="/videocapture" element={<VideoCapture />}></Route>
             </Routes>
           </div>
         </BrowserRouter>
