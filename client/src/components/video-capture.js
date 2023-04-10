@@ -1,15 +1,12 @@
 // src/VideoCapture.js
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import Webcam from "react-webcam";
-
-const SEGMENT_DURATION = 3000; // 3 seconds
 
 const VideoCapture = () => {
   const webcamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const [capturing, setCapturing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState([]);
-  const [uploadedSegments, setUploadedSegments] = useState([]);
 
   const handleStartCaptureClick = () => {
     setCapturing(true);
@@ -38,7 +35,7 @@ const VideoCapture = () => {
       "dataavailable",
       handleDataAvailable
     );
-    mediaRecorderRef.current.start(SEGMENT_DURATION);
+    mediaRecorderRef.current.start();
   };
 
   const handleDataAvailable = (e) => {
@@ -46,49 +43,42 @@ const VideoCapture = () => {
       setRecordedChunks((prev) => prev.concat(e.data));
     }
   };
-
-  const handleStopCaptureClick = () => {
+  const handleStopCaptureClick = async () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       setCapturing(false);
     }
-  };
 
-  const saveSegment = async (segmentBlob, index) => {
+    const blob = new Blob(recordedChunks, { type: "video/webm" });
+    setRecordedChunks([]);
+
     try {
-      const handle = await window.showDirectoryPicker();
-      const fileHandle = await handle.getFileHandle(`segment_${index}.webm`, {
-        create: true,
-      });
-      const writable = await fileHandle.createWritable();
-      await writable.write(segmentBlob);
-      await writable.close();
-      console.log("Segment saved:", `segment_${index}.webm`);
+      console.log(blob);
+      const formData = new FormData();
+      formData.append("video", blob, "video.webm");
+
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+
+      const response = await fetch(
+        "http://localhost:4000/api/video/videosegment",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (response.ok) {
+        const jsonResponse = await response.json();
+        console.log("Video uploaded:", jsonResponse);
+      } else {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
     } catch (err) {
-      console.error("Failed to save segment:", err);
+      console.error("Failed to upload video:", err);
     }
   };
-
-  useEffect(() => {
-    if (!capturing) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      if (recordedChunks.length > 0) {
-        const segment = recordedChunks.shift();
-        const index = uploadedSegments.length;
-        console.log("this is the segment" + segment);
-        console.log("this is the uploaded" + uploadedSegments);
-        setUploadedSegments((prev) => prev.concat(segment));
-        saveSegment(segment, index);
-      }
-    }, SEGMENT_DURATION);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [capturing, recordedChunks, uploadedSegments]);
 
   return (
     <div>

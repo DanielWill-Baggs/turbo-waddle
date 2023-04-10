@@ -12,6 +12,8 @@ import {
 export default function VideoCard({ video }) {
   return (
     <>
+      <br></br>
+
       <Card>
         <CardHeader>
           <Heading size="md"> {video.title}</Heading>
